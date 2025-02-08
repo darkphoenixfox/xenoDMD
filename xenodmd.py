@@ -199,17 +199,38 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
         time.sleep(0.5)
 
 def reload_config(event=None):
-    """Reloads configuration values when a key (e.g., F5) is pressed."""
-    global config_values
+    """Reloads configuration values when the F5 key is pressed."""
+    global config_values, label_fg, label_ball_count, label_disp1, label_disp2
     print("[INFO] Reloading config...")
-    config_values = load_config()
 
-    # Example: Updating GUI elements dynamically
-    label_fg.config(fg=config_values["score_color"])
-    label_ball_count.config(fg=config_values["ball_count_color"])
-    label_disp1.config(fg=config_values["disp1_color"], text=f"{config_values['disp1_label']} 00")
-    label_disp2.config(fg=config_values["disp2_color"], text=f"{config_values['disp2_label']} 00")
+    # Reload the configuration
+    (
+        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
+        back_x, back_y, back_width, back_height, backglass_bg,
+        score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
+        process_name, module_name, module2_name, base_address, offsets,
+        ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
+        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
+        ball_count_x, ball_count_y, ball_count_size
+    ) = load_config()
+
+    # Update UI elements dynamically
+    label_fg.config(fg=score_color, font=font.Font(family=font_name, size=int(dmd_height * score_size / 100)))
+    label_ball_count.config(fg=ball_count_color, text=f"{ball_count_label} 0",
+                            font=font.Font(family=font_name, size=int(ball_count_size)))
+    label_disp1.config(fg=disp1_color, text=f"{disp1_label} 00",
+                       font=font.Font(family=font_name, size=int(disp1_size)))
+    label_disp2.config(fg=disp2_color, text=f"{disp2_label} 00",
+                       font=font.Font(family=font_name, size=int(disp2_size)))
+    
+    # Reload positions
+    label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
+    label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
+    label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
+
     print("[INFO] Config reloaded successfully.")
+
+
 
     
 def create_dmd():
@@ -252,11 +273,13 @@ def create_dmd():
     ball_count_font = font.Font(family=font_name, size=int(ball_count_size))
     disp2_font = font.Font(family=font_name, size=int(disp2_size))
     disp1_font = font.Font(family=font_name, size=int(disp1_size))
+
+    global label_fg, label_ball_count, label_disp1, label_disp2
     
     label_fg = tk.Label(canvas, text="0.000.000.000.000", fg=score_color, bg='black', font=custom_font)
     label_fg.place(relx=0.5, rely=0.5, anchor='center')
     
-    label_ball_count = tk.Label(root, text=" ball count: 0", fg=ball_count_color, bg='black', font=ball_count_font)
+    label_ball_count = tk.Label(root, text=f" {ball_count_label} 0", fg=ball_count_color, bg='black', font=ball_count_font)
     label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
     
     label_disp2 = tk.Label(root, text=f" {disp2_label} 00", fg=disp2_color, bg='black', font=disp2_font)
@@ -266,6 +289,7 @@ def create_dmd():
     label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
     
     root.bind("<Escape>", lambda event: (root.destroy()))
+    root.bind("<F5>", reload_config)
     
     threading.Thread(
     target=update_dmd,
