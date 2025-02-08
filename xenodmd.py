@@ -111,11 +111,7 @@ def read_memory_value(process_name, base_address, module_name, offsets):
     except:
         return None
 
-def update_dmd(dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, score_color, ball_count_color, disp2_color, disp1_color,
-               ball_count_label, disp1_label, disp2_label, font_name, bg_alpha, back_x, back_y,
-               back_width, back_height, process_name, base_address, offsets, module_name, module2_name,
-               disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets,
-               label_fg, label_ball_count, label_disp1, label_disp2, root):
+def update_dmd(process_name, base_address, offsets, module_name, module2_name, disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets, label_fg, label_ball_count, label_disp1, label_disp2, root, disp1_label, disp2_label):
     
     """Continuously updates the DMD display by reading memory values and refreshing the UI elements."""
     global previous_ball_count  
@@ -220,13 +216,7 @@ def create_dmd():
     
     root.bind("<Escape>", lambda event: (root.destroy()))
     
-    threading.Thread(target=update_dmd, args=(
-    dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, score_color, ball_count_color, disp2_color, disp1_color,
-    ball_count_label, disp1_label, disp2_label, font_name, bg_alpha, back_x, back_y,
-    back_width, back_height, process_name, base_address, offsets, module_name, module2_name,
-    disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets,
-    label_fg, label_ball_count, label_disp1, label_disp2, root
-    ), daemon=True).start()
+    threading.Thread(target=update_dmd, args=(process_name, base_address, offsets, module_name, module2_name, disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets, label_fg, label_ball_count, label_disp1, label_disp2, root, disp1_label, disp2_label), daemon=True).start()
 
 
     root.mainloop()
