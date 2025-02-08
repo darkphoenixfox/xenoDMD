@@ -11,7 +11,7 @@ This script creates a Dynamic Message Display (DMD) and backglass display for **
 
 See it in action: 
 
-[![Youtube video of the XenoDMD in a Virtual Pinball cabinet](https://i.ytimg.com/vi/AlW3EWoYUPo/oar2.jpg)](https://www.youtube.com/watch?v=AlW3EWoYUPo)
+https://github.com/darkphoenixfox/xenoDMD/blob/main/xeno.mp4
 
 ## Features
 - Reads live memory values from **XENOTILT**.
