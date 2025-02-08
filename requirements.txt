@@ -1,0 +1,4 @@
+psutil
+pymem
+pillow
+tk
