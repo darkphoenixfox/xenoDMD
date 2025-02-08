@@ -5,6 +5,8 @@ This script creates a Dynamic Message Display (DMD) and backglass display for **
 
 ![Screenshot](screen1.png)
 
+(The font used in the screenshot is [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype.)
+
 ## Features
 - Reads live memory values from **XENOTILT**.
 - Displays score, ball count, and additional game data.
@@ -14,6 +16,12 @@ This script creates a Dynamic Message Display (DMD) and backglass display for **
 
 ## Requirements
 ### Python Dependencies
+
+Install the requirements using pip:
+```
+pip install -r requirements.txt
+```
+
 Ensure you have the following installed:
 ```
 pip install pymem pillow
