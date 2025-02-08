@@ -1,4 +1,5 @@
-psutil
 pymem
-pillow
-tk
+Pillow
+psutil
+watchdog
+pyinstaller

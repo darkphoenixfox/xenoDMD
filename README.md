@@ -5,7 +5,9 @@ This script creates a Dynamic Message Display (DMD) and backglass display for **
 
 ![Screenshot](screen1.png)
 
-(The font used in the screenshot is [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype.)
+![Screenshot](screen2.png)
+
+(The fonts used in the screenshot are [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype and [Digital-7](https://www.dafont.com/digital-7.font) by Style-7.)
 
 ## Features
 - Reads live memory values from **XENOTILT**.
@@ -40,7 +42,7 @@ The script reads from `config.cfg`, which defines settings for:
 - **Display text colors and labels**
 - **Memory addresses and offsets** for reading game data
 
-Example config.cfg:
+Example config.cfg (remove the comments before using it, or use the example file from the repository):
 ```ini
 ; DMD (Dot Matrix Display) settings
 [DMD]
@@ -50,7 +52,7 @@ dmd_x = 1290                        ; X position of the DMD window on the screen
 dmd_y = 0                           ; Y position of the DMD window
 dmd_bg = background.png             ; Background image for the DMD
 bg_alpha = 255                      ; Transparency level (0-255, where 255 is fully opaque)
-font_name = The Led Display ST      ; Font used for text in the DMD (Must be installed on the system)
+font_name = Digital Counter 7       ; Font used for text in the DMD (Must be installed on the system)
 
 ; Backglass settings
 [BACKGLASS]
