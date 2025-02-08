@@ -8,6 +8,7 @@ from tkinter import font, Canvas, PhotoImage
 import threading
 import time
 import os
+import sys
 import configparser
 from PIL import Image, ImageTk, ImageOps
 
@@ -110,24 +111,44 @@ def read_memory_value(process_name, base_address, module_name, offsets):
         return value
     except:
         return None
-
-def update_dmd(process_name, base_address, offsets, module_name, module2_name, disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets, label_fg, label_ball_count, label_disp1, label_disp2, root, disp1_label, disp2_label):
     
-    """Continuously updates the DMD display by reading memory values and refreshing the UI elements."""
+def is_process_running(process_name):
+    """Check if a process is running by name."""
+    for process in psutil.process_iter(attrs=['name']):
+        if process.info['name'].lower() == process_name.lower():
+            return True
+    return False
+
+def update_dmd(process_name, base_address, offsets, module_name, module2_name, 
+               disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
+               ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
+               label_disp1, label_disp2, root, disp1_label, disp2_label):
+    """Continuously updates the DMD display and exits if XENOTILT.exe is closed."""
+    
     global previous_ball_count  
     previous_ball_count = None  
     displaying_message = False  
+    detected_once = False  # Track if the process was found at least once
 
     def restore_score():
         """Restores the score display after message delay."""
         nonlocal displaying_message
         displaying_message = False  
-        score_value = read_memory_value(process_name, base_address, module_name, )
+        score_value = read_memory_value(process_name, base_address, module_name, offsets)
         if score_value is not None:
             formatted_score = format_score(score_value)
             label_fg.config(text=formatted_score)
 
     while True:
+        # Check if the process is running
+        if is_process_running(process_name):
+            detected_once = True  # Mark that the process has been seen at least once
+        elif detected_once:
+            print(f"Process {process_name} has closed. Exiting...")
+            root.destroy()  # Close the Tkinter window
+            sys.exit(0)  # Terminate the script
+
+        # Read memory values
         score_value = read_memory_value(process_name, base_address, module_name, offsets)
         ball_count_value = read_memory_value(process_name, ball_count_base, module2_name, ball_count_offsets)
         disp2_value = read_memory_value(process_name, disp2_base, module_name, disp2_offsets)
