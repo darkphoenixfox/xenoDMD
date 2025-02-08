@@ -16,7 +16,7 @@ CONFIG_FILE = "config.cfg"
 
 
 def load_config():
-    """Load settings from config file and return as variables."""
+    """Loads settings from the config file and returns them as variables."""
     config = configparser.ConfigParser()
     config.read("config.cfg")
 
@@ -25,7 +25,7 @@ def load_config():
     dmd_height = int(config["DMD"]["dmd_height"])
     dmd_x = int(config["DMD"]["dmd_x"])
     dmd_y = int(config["DMD"]["dmd_y"])
-    dmd_scale = int(config["DMD"]["dmd_scale"])
+    dmd_text_scale = int(config["DMD"]["dmd_text_scale"])
     dmd_bg = config["DMD"]["dmd_bg"]
     bg_alpha = int(config["DMD"]["bg_alpha"])
     font_name = config["DMD"]["font_name"]
@@ -63,7 +63,7 @@ def load_config():
     disp2_offsets = [int(offset, 16) for offset in config["MEMORY"]["disp2_offsets"].split(",")]
 
     return (
-        dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, dmd_bg, bg_alpha, font_name,
+        dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, dmd_bg, bg_alpha, font_name,
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
         process_name, module_name, module2_name, base_address, offsets,
@@ -72,7 +72,7 @@ def load_config():
 
 
 def create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root):
-    """Creates a second GUI window that displays the backglass image."""
+    """Creates a separate window to display the backglass image."""
     wall_root = tk.Toplevel()
     wall_root.overrideredirect(True)
     wall_root.geometry(f"{back_width}x{back_height}+{back_x}+{back_y}")
@@ -92,13 +92,13 @@ def create_backglass_window(back_x, back_y, back_width, back_height, backglass_b
 
 
 def format_score(value):
-    """Format the score with dots every three digits, ensuring it is always 12 digits long."""
+    """Formats the score with dots every three digits, ensuring it is always 12 digits long."""
     formatted_value = f"{value:012d}"
     return ".".join([formatted_value[max(i - 3, 0):i] for i in range(len(formatted_value), 0, -3)][::-1])
 
 
 def read_memory_value(process_name, base_address, module_name, offsets):
-    """Reads memory value using module base address + offsets."""
+    """Reads a memory value from a specific process, following the given base address and offsets."""
     try:
         pm = pymem.Pymem(process_name)
         module_base = pymem.process.module_from_name(pm.process_handle, module_name).lpBaseOfDll
@@ -111,13 +111,13 @@ def read_memory_value(process_name, base_address, module_name, offsets):
     except:
         return None
 
-def update_dmd(dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, score_color, ball_count_color, disp2_color, disp1_color,
+def update_dmd(dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, score_color, ball_count_color, disp2_color, disp1_color,
                ball_count_label, disp1_label, disp2_label, font_name, bg_alpha, back_x, back_y,
                back_width, back_height, process_name, base_address, offsets, module_name, module2_name,
                disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets,
                label_fg, label_ball_count, label_disp1, label_disp2, root):
-
-    """Continuously update the GUI with the memory values."""
+    
+    """Continuously updates the DMD display by reading memory values and refreshing the UI elements."""
     global previous_ball_count  
     previous_ball_count = None  
     displaying_message = False  
@@ -168,9 +168,9 @@ def update_dmd(dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, score_color, ball
 
 
 def create_dmd():
-    """Creates the GUI window to display the memory values like a Pinball DMD."""
+    """Initializes and creates the GUI window for displaying the DMD and backglass, loading necessary settings."""
     (
-    dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, dmd_bg, bg_alpha, font_name,
+    dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, dmd_bg, bg_alpha, font_name,
     back_x, back_y, back_width, back_height, backglass_bg,
     score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
     process_name, module_name, module2_name, base_address, offsets,
@@ -201,10 +201,10 @@ def create_dmd():
 
     wallpaper_window = create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root)
     
-    custom_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 100))
-    ball_count_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 200))
-    disp2_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 350))
-    disp1_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 350))
+    custom_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 100))
+    ball_count_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 200))
+    disp2_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 350))
+    disp1_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 350))
     
     label_fg = tk.Label(canvas, text="0.000.000.000.000", fg=score_color, bg='black', font=custom_font)
     label_fg.place(relx=0.5, rely=0.5, anchor='center')
@@ -221,7 +221,7 @@ def create_dmd():
     root.bind("<Escape>", lambda event: (root.destroy()))
     
     threading.Thread(target=update_dmd, args=(
-    dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, score_color, ball_count_color, disp2_color, disp1_color,
+    dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, score_color, ball_count_color, disp2_color, disp1_color,
     ball_count_label, disp1_label, disp2_label, font_name, bg_alpha, back_x, back_y,
     back_width, back_height, process_name, base_address, offsets, module_name, module2_name,
     disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets,
