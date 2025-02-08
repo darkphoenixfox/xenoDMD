@@ -15,6 +15,7 @@ out/
 *.ntvs*
 *.njsproj
 *.sln
+*.spec
 
 # OS files
 .DS_Store
@@ -31,8 +32,9 @@ Thumbs.db
 *.rej
 *.gz
 
-# complimentary files
+# custom files
 
 background.png
 wallpaper.png
 config.cfg
+xeno.ico
