@@ -1,0 +1,38 @@
+# Logs
+logs/
+*.log
+*.log.*
+
+# Build directories
+dist/
+build/
+out/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# Miscellaneous
+*.swp
+*.bak
+*.tmp
+*.orig
+*.rej
+*.gz
+
+# complimentary files
+
+background.png
+wallpaper.png
+config.cfg
