@@ -16,96 +16,79 @@ CONFIG_FILE = "config.cfg"
 
 
 def load_config():
-    """Load GUI settings from config file and provide default values for any missing entries."""
+    """Load settings from config file and return as variables."""
     config = configparser.ConfigParser()
-    default_config = {
-        "width": "1280",
-        "height": "720",
-        "x": "1920",
-        "y": "0",
-        "scale": "100",
-        "text_color": "#95f184",
-        "ball_count_color": "#ffcc00",
-        "disp2_color": "#ff4444",
-        "disp1_color": "#ff4444",
-        "disp1_label": "Display 1:",
-        "disp2_label": "Display 2:",
-        "font": "Courier",
-        "bg_alpha": "255",
-        "wall_x": "100",
-        "wall_y": "100",
-        "wall_size_x": "800",
-        "wall_size_y": "600",
-        "process_name": "XENOTILT.exe"
-    }
-    
-    if not os.path.exists(CONFIG_FILE):
-        config["GUI"] = default_config
-        with open(CONFIG_FILE, "w") as configfile:
-            config.write(configfile)
-    else:
-        config.read(CONFIG_FILE)
-        if "GUI" not in config:
-            config["GUI"] = default_config
-        else:
-            for key, value in default_config.items():
-                if key not in config["GUI"]:
-                    config["GUI"][key] = value
-        with open(CONFIG_FILE, "w") as configfile:
-            config.write(configfile)
-    
-    gui_config = config["GUI"]
+    config.read("config.cfg")
+
+    # DMD settings
+    dmd_width = int(config["DMD"]["dmd_width"])
+    dmd_height = int(config["DMD"]["dmd_height"])
+    dmd_x = int(config["DMD"]["dmd_x"])
+    dmd_y = int(config["DMD"]["dmd_y"])
+    dmd_scale = int(config["DMD"]["dmd_scale"])
+    dmd_bg = config["DMD"]["dmd_bg"]
+    bg_alpha = int(config["DMD"]["bg_alpha"])
+    font_name = config["DMD"]["font_name"]
+
+    # Backglass settings
+    back_x = int(config["BACKGLASS"]["back_x"])
+    back_y = int(config["BACKGLASS"]["back_y"])
+    back_width = int(config["BACKGLASS"]["back_width"])
+    back_height = int(config["BACKGLASS"]["back_height"])
+    backglass_bg = config["BACKGLASS"]["backglass_bg"]
+
+    # Display settings
+    score_color = config["DISPLAYS"]["score_color"]
+    ball_count_label = config["DISPLAYS"]["ball_count_label"]
+    ball_count_color = config["DISPLAYS"]["ball_count_color"]
+    disp1_label = config["DISPLAYS"]["disp1_label"]
+    disp1_color = config["DISPLAYS"]["disp1_color"]
+    disp2_label = config["DISPLAYS"]["disp2_label"]
+    disp2_color = config["DISPLAYS"]["disp2_color"]
+
+    # Memory settings
+    process_name = config["MEMORY"]["process_name"]
+    module_name = config["MEMORY"]["module_name"]
+    module2_name = config["MEMORY"]["module2_name"]
+    base_address = int(config["MEMORY"]["base_address"], 16)
+    offsets = [int(offset, 16) for offset in config["MEMORY"]["offsets"].split(",")]
+
+    ball_count_base = int(config["MEMORY"]["ball_count_base"], 16)
+    ball_count_offsets = [int(offset, 16) for offset in config["MEMORY"]["ball_count_offsets"].split(",")]
+
+    disp1_base = int(config["MEMORY"]["disp1_base"], 16)
+    disp1_offsets = [int(offset, 16) for offset in config["MEMORY"]["disp1_offsets"].split(",")]
+
+    disp2_base = int(config["MEMORY"]["disp2_base"], 16)
+    disp2_offsets = [int(offset, 16) for offset in config["MEMORY"]["disp2_offsets"].split(",")]
+
     return (
-        int(gui_config["width"]), int(gui_config["height"]), int(gui_config["x"]), int(gui_config["y"]), 
-        int(gui_config["scale"]), gui_config["text_color"], gui_config["ball_count_color"], gui_config["disp2_color"],
-        gui_config["disp1_color"], gui_config["disp1_label"], gui_config["disp2_label"], 
-        gui_config["font"], int(gui_config["bg_alpha"]),
-        int(gui_config["wall_x"]), int(gui_config["wall_y"]), int(gui_config["wall_size_x"]), int(gui_config["wall_size_y"]),
-        gui_config["process_name"]
+        dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, dmd_bg, bg_alpha, font_name,
+        back_x, back_y, back_width, back_height, backglass_bg,
+        score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
+        process_name, module_name, module2_name, base_address, offsets,
+        ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets
     )
 
 
-def create_wallpaper_window(wall_x, wall_y, wall_size_x, wall_size_y, root):
-    """Creates a second GUI window that displays the wallpaper.png image."""
+def create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root):
+    """Creates a second GUI window that displays the backglass image."""
     wall_root = tk.Toplevel()
     wall_root.overrideredirect(True)
-    wall_root.geometry(f"{wall_size_x}x{wall_size_y}+{wall_x}+{wall_y}")
-    
-    canvas = Canvas(wall_root, width=wall_size_x, height=wall_size_y, highlightthickness=0, bd=0)
+    wall_root.geometry(f"{back_width}x{back_height}+{back_x}+{back_y}")
+
+    canvas = Canvas(wall_root, width=back_width, height=back_height, highlightthickness=0, bd=0)
     canvas.pack()
-    
-    if os.path.exists("wallpaper.png"):
-        image = Image.open("wallpaper.png").convert("RGBA")
-        image = image.resize((wall_size_x, wall_size_y), Image.LANCZOS)
+
+    if os.path.exists(backglass_bg):
+        image = Image.open(backglass_bg).convert("RGBA")
+        image = image.resize((back_width, back_height), Image.LANCZOS)
         bg_image = ImageTk.PhotoImage(image)
         canvas.create_image(0, 0, anchor="nw", image=bg_image)
-        canvas.image = bg_image  
-    
+        canvas.image = bg_image
+
     wall_root.bind("<Escape>", lambda event: (wall_root.destroy(), root.destroy()))
     return wall_root
-
-# Remove duplicate create_wallpaper_window function
-
-def create_wallpaper_window(wall_x, wall_y, wall_size_x, wall_size_y, root):
-    """Creates a second GUI window that displays the wallpaper.png image."""
-    wall_root = tk.Toplevel()
-    wall_root.overrideredirect(True)
-    wall_root.geometry(f"{wall_size_x}x{wall_size_y}+{wall_x}+{wall_y}")
-    
-    canvas = Canvas(wall_root, width=wall_size_x, height=wall_size_y, highlightthickness=0, bd=0)
-    canvas.pack()
-    
-    if os.path.exists("wallpaper.png"):
-        image = Image.open("wallpaper.png").convert("RGBA")
-        image = image.resize((wall_size_x, wall_size_y), Image.LANCZOS)
-        bg_image = ImageTk.PhotoImage(image)
-        canvas.create_image(0, 0, anchor="nw", image=bg_image)
-        canvas.image = bg_image  
-    
-    wall_root.bind("<Escape>", lambda event: (wall_root.destroy(), root.destroy()))
-    return wall_root
-
-# Remove duplicate create_wallpaper_window function
 
 
 def format_score(value):
@@ -128,8 +111,11 @@ def read_memory_value(process_name, base_address, module_name, offsets):
     except:
         return None
 
-
-def update_gui(label_fg, label_ball_count, label_disp1, label_disp2, root, scale, disp1_label, disp2_label):
+def update_dmd(dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, score_color, ball_count_color, disp2_color, disp1_color,
+               ball_count_label, disp1_label, disp2_label, font_name, bg_alpha, back_x, back_y,
+               back_width, back_height, process_name, base_address, offsets, module_name, module2_name,
+               disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets,
+               label_fg, label_ball_count, label_disp1, label_disp2, root):
 
     """Continuously update the GUI with the memory values."""
     global previous_ball_count  
@@ -140,16 +126,16 @@ def update_gui(label_fg, label_ball_count, label_disp1, label_disp2, root, scale
         """Restores the score display after message delay."""
         nonlocal displaying_message
         displaying_message = False  
-        score_value = read_memory_value(PROCESS_NAME, BASE_ADDRESS, MODULE_NAME, OFFSETS)
+        score_value = read_memory_value(process_name, base_address, module_name, )
         if score_value is not None:
             formatted_score = format_score(score_value)
             label_fg.config(text=formatted_score)
 
     while True:
-        score_value = read_memory_value(PROCESS_NAME, BASE_ADDRESS, MODULE_NAME, OFFSETS)
-        ball_count_value = read_memory_value(PROCESS_NAME, BALL_COUNT_BASE, MODULE2_NAME, BALL_COUNT_OFFSETS)
-        disp2_value = read_memory_value(PROCESS_NAME, DISP2_BASE, MODULE_NAME, DISP2_OFFSETS)
-        disp1_value = read_memory_value(PROCESS_NAME, DISP1_BASE, MODULE2_NAME, DISP1_OFFSETS)
+        score_value = read_memory_value(process_name, base_address, module_name, offsets)
+        ball_count_value = read_memory_value(process_name, ball_count_base, module2_name, ball_count_offsets)
+        disp2_value = read_memory_value(process_name, disp2_base, module_name, disp2_offsets)
+        disp1_value = read_memory_value(process_name, disp1_base, module2_name, disp1_offsets)
 
         if ball_count_value is not None:
             label_ball_count.config(text=f"ball count: {ball_count_value}")
@@ -181,28 +167,30 @@ def update_gui(label_fg, label_ball_count, label_disp1, label_disp2, root, scale
         time.sleep(0.5)
 
 
-def create_gui():
+def create_dmd():
     """Creates the GUI window to display the memory values like a Pinball DMD."""
-    width, height, x, y, scale, text_color, ball_count_color, disp2_color, disp1_color, disp1_label, disp2_label, font_name, bg_alpha, wall_x, wall_y, wall_size_x, wall_size_y, process_name = load_config()
-    
-    global FONT_NAME
-    FONT_NAME = font_name
-    global PROCESS_NAME
-    PROCESS_NAME = process_name
+    (
+    dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, dmd_bg, bg_alpha, font_name,
+    back_x, back_y, back_width, back_height, backglass_bg,
+    score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
+    process_name, module_name, module2_name, base_address, offsets,
+    ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets
+    ) = load_config()
+
     
     root = tk.Tk()
     root.overrideredirect(True)  # Removes title bar
-    root.geometry(f"{width}x{height}+{x}+{y}")
+    root.geometry(f"{dmd_width}x{dmd_height}+{dmd_x}+{dmd_y}")
     root.configure(bg='black')
     
-    canvas = Canvas(root, width=width, height=height, highlightthickness=0, bd=0, bg='black')
+    canvas = Canvas(root, width=dmd_width, height=dmd_height, highlightthickness=0, bd=0, bg='black')
     canvas.pack()
     
-    if os.path.exists("background.png"):
-        image = Image.open("background.png").convert("RGBA")
-        image = image.resize((width, height), Image.LANCZOS)
+    if os.path.exists(dmd_bg):
+        image = Image.open(dmd_bg).convert("RGBA")
+        image = image.resize((dmd_width, dmd_height), Image.LANCZOS)
         
-        black_bg = Image.new("RGBA", (width, height), (0, 0, 0, 255))
+        black_bg = Image.new("RGBA", (dmd_width, dmd_height), (0, 0, 0, 255))
         image = Image.alpha_composite(black_bg, image)
         alpha_channel = image.split()[3].point(lambda p: int(p * (bg_alpha / 255)))
         image.putalpha(alpha_channel)
@@ -211,14 +199,14 @@ def create_gui():
         canvas.create_image(0, 0, anchor="nw", image=bg_image)
         canvas.image = bg_image
 
-    wallpaper_window = create_wallpaper_window(wall_x, wall_y, wall_size_x, wall_size_y, root)
+    wallpaper_window = create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root)
     
-    custom_font = font.Font(family=font_name, size=int(height * scale / 100))
-    ball_count_font = font.Font(family=font_name, size=int(height * scale / 200))
-    disp2_font = font.Font(family=font_name, size=int(height * scale / 350))
-    disp1_font = font.Font(family=font_name, size=int(height * scale / 350))
+    custom_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 100))
+    ball_count_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 200))
+    disp2_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 350))
+    disp1_font = font.Font(family=font_name, size=int(dmd_height * dmd_scale / 350))
     
-    label_fg = tk.Label(canvas, text="0.000.000.000.000", fg=text_color, bg='black', font=custom_font)
+    label_fg = tk.Label(canvas, text="0.000.000.000.000", fg=score_color, bg='black', font=custom_font)
     label_fg.place(relx=0.5, rely=0.5, anchor='center')
     
     label_ball_count = tk.Label(root, text=" ball count: 0", fg=ball_count_color, bg='black', font=ball_count_font)
@@ -232,17 +220,18 @@ def create_gui():
     
     root.bind("<Escape>", lambda event: (root.destroy()))
     
-    threading.Thread(target=update_gui, args=(label_fg, label_ball_count, label_disp1, label_disp2, root, scale, disp1_label, disp2_label), daemon=True).start()
+    threading.Thread(target=update_dmd, args=(
+    dmd_width, dmd_height, dmd_x, dmd_y, dmd_scale, score_color, ball_count_color, disp2_color, disp1_color,
+    ball_count_label, disp1_label, disp2_label, font_name, bg_alpha, back_x, back_y,
+    back_width, back_height, process_name, base_address, offsets, module_name, module2_name,
+    disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets,
+    label_fg, label_ball_count, label_disp1, label_disp2, root
+    ), daemon=True).start()
+
 
     root.mainloop()
 
-
-
 if __name__ == "__main__":
-    BASE_ADDRESS = 0x0074A0B8
-    MODULE_NAME = "mono-2.0-bdwgc.dll"
-    MODULE2_NAME = "UnityPlayer.dll"
-    OFFSETS = [0x30, 0xE88]
     
     BALL_COUNT_BASE = 0x01D21378
     BALL_COUNT_OFFSETS = [0x0, 0x58, 0x0, 0xC0, 0x28, 0x38, 0x670]
@@ -253,4 +242,4 @@ if __name__ == "__main__":
     DISP1_BASE = 0x01D047E8
     DISP1_OFFSETS = [0xD0, 0x8, 0x68, 0x30, 0xB8, 0x2A0, 0x170]
 
-    create_gui()
+    create_dmd()
