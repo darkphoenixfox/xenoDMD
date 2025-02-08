@@ -9,9 +9,7 @@ This script creates a Dynamic Message Display (DMD) and backglass display for **
 
 (The fonts used in the screenshot are [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype and [Digital-7](https://www.dafont.com/digital-7.font) by Style-7.)
 
-See it in action: 
-
-https://github.com/darkphoenixfox/xenoDMD/blob/main/xeno.mp4
+See it in action on [YouTube](https://www.youtube.com/watch?v=AlW3EWoYUPo).
 
 ## Features
 - Reads live memory values from **XENOTILT**.
