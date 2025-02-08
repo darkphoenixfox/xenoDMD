@@ -40,20 +40,20 @@ The script reads from `config.cfg`, which defines settings for:
 - **Display text colors and labels**
 - **Memory addresses and offsets** for reading game data
 
-Example configuration:
+Example config.cfg:
 ```ini
 [DMD]
-dmd_width = 1920
-dmd_height = 1080
+dmd_width = 1280
+dmd_height = 720
 dmd_x = 10
-dmd_y = 10
+dmd_y = 720
 dmd_text_scale = 12
 dmd_bg = background.png
 bg_alpha = 255
 font_name = The Led Display ST
 
 [BACKGLASS]
-back_x = 1500
+back_x = 10
 back_y = 0
 back_width = 1280
 back_height = 720
@@ -63,8 +63,14 @@ backglass_bg = wallpaper.png
 score_color = #95f184
 ball_count_label = ball count:
 ball_count_color = #e8f15d
+disp1_x = 0.065
+disp1_y = 0.75
+disp1_size = 20
 disp1_label = varia:
 disp1_color = #ff4444
+disp2_x = 0.065
+disp2_y = 0.88
+disp2_size = 20
 disp2_label = hos:
 disp2_color = #ff4444
 

@@ -44,8 +44,16 @@ def load_config():
     ball_count_color = config["DISPLAYS"]["ball_count_color"]
     disp1_label = config["DISPLAYS"]["disp1_label"]
     disp1_color = config["DISPLAYS"]["disp1_color"]
+    disp1_x = config["DISPLAYS"]["disp1_x"]
+    disp1_y = config["DISPLAYS"]["disp1_y"]
+    disp1_size = config["DISPLAYS"]["disp1_size"]
     disp2_label = config["DISPLAYS"]["disp2_label"]
     disp2_color = config["DISPLAYS"]["disp2_color"]
+    disp2_size = config["DISPLAYS"]["disp2_size"]
+    disp2_x = config["DISPLAYS"]["disp2_x"]
+    disp2_y = config["DISPLAYS"]["disp2_y"]
+
+    
 
     # Memory settings
     process_name = config["MEMORY"]["process_name"]
@@ -68,7 +76,8 @@ def load_config():
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
         process_name, module_name, module2_name, base_address, offsets,
-        ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets
+        ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
+        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size
     )
 
 
@@ -122,7 +131,8 @@ def is_process_running(process_name):
 def update_dmd(process_name, base_address, offsets, module_name, module2_name, 
                disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
                ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
-               label_disp1, label_disp2, root, disp1_label, disp2_label):
+               label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y,
+               disp1_size, disp2_x, disp2_y, disp2_size):
     """Continuously updates the DMD display and exits if XENOTILT.exe is closed."""
     
     global previous_ball_count  
@@ -191,7 +201,8 @@ def create_dmd():
     back_x, back_y, back_width, back_height, backglass_bg,
     score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
     process_name, module_name, module2_name, base_address, offsets,
-    ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets
+    ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
+    disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
     ) = load_config()
 
     
@@ -220,8 +231,8 @@ def create_dmd():
     
     custom_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 100))
     ball_count_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 200))
-    disp2_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 350))
-    disp1_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 350))
+    disp2_font = font.Font(family=font_name, size=int(disp2_size))
+    disp1_font = font.Font(family=font_name, size=int(disp1_size))
     
     label_fg = tk.Label(canvas, text="0.000.000.000.000", fg=score_color, bg='black', font=custom_font)
     label_fg.place(relx=0.5, rely=0.5, anchor='center')
@@ -230,14 +241,14 @@ def create_dmd():
     label_ball_count.place(relx=0.95, rely=0.95, anchor='se')
     
     label_disp2 = tk.Label(root, text=f" {disp2_label} 00", fg=disp2_color, bg='black', font=disp2_font)
-    label_disp2.place(relx=0.05, rely=0.95, anchor='sw')
+    label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
 
     label_disp1 = tk.Label(root, text=f" {disp1_label} 00", fg=disp1_color, bg='black', font=disp1_font)
-    label_disp1.place(relx=0.05, rely=0.85, anchor='sw')
+    label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
     
     root.bind("<Escape>", lambda event: (root.destroy()))
     
-    threading.Thread(target=update_dmd, args=(process_name, base_address, offsets, module_name, module2_name, disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets, label_fg, label_ball_count, label_disp1, label_disp2, root, disp1_label, disp2_label), daemon=True).start()
+    threading.Thread(target=update_dmd, args=(process_name, base_address, offsets, module_name, module2_name, disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets, label_fg, label_ball_count, label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size), daemon=True).start()
 
 
     root.mainloop()
