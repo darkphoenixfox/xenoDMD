@@ -26,7 +26,6 @@ def load_config():
     dmd_height = int(config["DMD"]["dmd_height"])
     dmd_x = int(config["DMD"]["dmd_x"])
     dmd_y = int(config["DMD"]["dmd_y"])
-    dmd_text_scale = int(config["DMD"]["dmd_text_scale"])
     dmd_bg = config["DMD"]["dmd_bg"]
     bg_alpha = int(config["DMD"]["bg_alpha"])
     font_name = config["DMD"]["font_name"]
@@ -40,8 +39,12 @@ def load_config():
 
     # Display settings
     score_color = config["DISPLAYS"]["score_color"]
+    score_size = int(config["DISPLAYS"]["score_size"])
     ball_count_label = config["DISPLAYS"]["ball_count_label"]
     ball_count_color = config["DISPLAYS"]["ball_count_color"]
+    ball_count_x = config["DISPLAYS"]["ball_count_x"]
+    ball_count_y = config["DISPLAYS"]["ball_count_y"]
+    ball_count_size = config["DISPLAYS"]["ball_count_size"]
     disp1_label = config["DISPLAYS"]["disp1_label"]
     disp1_color = config["DISPLAYS"]["disp1_color"]
     disp1_x = config["DISPLAYS"]["disp1_x"]
@@ -72,12 +75,13 @@ def load_config():
     disp2_offsets = [int(offset, 16) for offset in config["MEMORY"]["disp2_offsets"].split(",")]
 
     return (
-        dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, dmd_bg, bg_alpha, font_name,
+        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
         process_name, module_name, module2_name, base_address, offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
-        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size
+        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
+        ball_count_x, ball_count_y, ball_count_size
     )
 
 
@@ -132,7 +136,8 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
                disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
                ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
                label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y,
-               disp1_size, disp2_x, disp2_y, disp2_size):
+               disp1_size, disp2_x, disp2_y, disp2_size,
+               ball_count_x, ball_count_y, ball_count_size):
     """Continuously updates the DMD display and exits if XENOTILT.exe is closed."""
     
     global previous_ball_count  
@@ -193,16 +198,30 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
         root.after(1, lambda: None)  
         time.sleep(0.5)
 
+def reload_config(event=None):
+    """Reloads configuration values when a key (e.g., F5) is pressed."""
+    global config_values
+    print("[INFO] Reloading config...")
+    config_values = load_config()
 
+    # Example: Updating GUI elements dynamically
+    label_fg.config(fg=config_values["score_color"])
+    label_ball_count.config(fg=config_values["ball_count_color"])
+    label_disp1.config(fg=config_values["disp1_color"], text=f"{config_values['disp1_label']} 00")
+    label_disp2.config(fg=config_values["disp2_color"], text=f"{config_values['disp2_label']} 00")
+    print("[INFO] Config reloaded successfully.")
+
+    
 def create_dmd():
     """Initializes and creates the GUI window for displaying the DMD and backglass, loading necessary settings."""
     (
-    dmd_width, dmd_height, dmd_x, dmd_y, dmd_text_scale, dmd_bg, bg_alpha, font_name,
+    dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
     back_x, back_y, back_width, back_height, backglass_bg,
     score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
     process_name, module_name, module2_name, base_address, offsets,
     ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
     disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
+    ball_count_x, ball_count_y, ball_count_size
     ) = load_config()
 
     
@@ -229,8 +248,8 @@ def create_dmd():
 
     wallpaper_window = create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root)
     
-    custom_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 100))
-    ball_count_font = font.Font(family=font_name, size=int(dmd_height * dmd_text_scale / 200))
+    custom_font = font.Font(family=font_name, size=int(dmd_height * score_size / 100))
+    ball_count_font = font.Font(family=font_name, size=int(ball_count_size))
     disp2_font = font.Font(family=font_name, size=int(disp2_size))
     disp1_font = font.Font(family=font_name, size=int(disp1_size))
     
@@ -238,7 +257,7 @@ def create_dmd():
     label_fg.place(relx=0.5, rely=0.5, anchor='center')
     
     label_ball_count = tk.Label(root, text=" ball count: 0", fg=ball_count_color, bg='black', font=ball_count_font)
-    label_ball_count.place(relx=0.95, rely=0.95, anchor='se')
+    label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
     
     label_disp2 = tk.Label(root, text=f" {disp2_label} 00", fg=disp2_color, bg='black', font=disp2_font)
     label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
@@ -248,7 +267,19 @@ def create_dmd():
     
     root.bind("<Escape>", lambda event: (root.destroy()))
     
-    threading.Thread(target=update_dmd, args=(process_name, base_address, offsets, module_name, module2_name, disp1_base, disp1_offsets, disp2_base, disp2_offsets, ball_count_base, ball_count_offsets, label_fg, label_ball_count, label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size), daemon=True).start()
+    threading.Thread(
+    target=update_dmd,
+    args=(
+        process_name, base_address, offsets, module_name, module2_name,
+        disp1_base, disp1_offsets, disp2_base, disp2_offsets,
+        ball_count_base, ball_count_offsets, label_fg, label_ball_count,
+        label_disp1, label_disp2, root, disp1_label, disp2_label,
+        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
+        ball_count_x, ball_count_y, ball_count_size
+    ),
+    daemon=True
+    ).start()
+
 
 
     root.mainloop()
