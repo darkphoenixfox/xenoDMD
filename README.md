@@ -9,6 +9,10 @@ This script creates a Dynamic Message Display (DMD) and backglass display for **
 
 (The fonts used in the screenshot are [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype and [Digital-7](https://www.dafont.com/digital-7.font) by Style-7.)
 
+See it in action: 
+
+[![Youtube video of the XenoDMD in a Virtual Pinball cabinet](https://i.ytimg.com/vi/AlW3EWoYUPo/oar2.jpg)](https://www.youtube.com/watch?v=AlW3EWoYUPo)
+
 ## Features
 - Reads live memory values from **XENOTILT**.
 - Displays score, ball count, and additional game data.
