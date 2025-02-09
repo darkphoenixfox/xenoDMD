@@ -66,27 +66,30 @@ back_height = 720                   ; Height of the backglass window
 backglass_bg = wallpaper.png        ; Background image for the backglass
 
 ; Positioning, labels annd appearance of the information shown in the DMD
+; All positions are a percentage of the window size (0 is all the way to the left/top, 1 is all the way to the right/bottom). The X and Y are for the center of the text.
 [DISPLAYS]
-score_size = 12                     ; Font size of the score text
-score_color = #95f184             ; Color of the score text
+score_color = #00ff73             ; Color of the score text
+score_x = 50                        ; X position of the score text
+score_y = 50                        ; Y position of the score text
+score_size = 100                    ; Font size of the score text
 ball_count_enabled = true           ; Enable or disable the ball count display (true or false)
 ball_count_label = ball count:      ; Label before the ball count
 ball_count_color = #e8f15d        ; Color of the ball count text
-ball_count_x = 0.545                ; X position of the ball count text (relative, 0 is all the way to the left, 1 is all the way to the right)
-ball_count_y = 0.82                 ; Y position of the ball count text (relative, 0 is at the top, 1 is at the bottom)
-ball_count_size = 45                ; Font size of the ball count text
+ball_count_x = 74.5                 ; X position of the ball count text (relative, 0 is all the way to the left, 1 is all the way to the right)
+ball_count_y = 89                   ; Y position of the ball count text (relative, 0 is at the top, 1 is at the bottom)
+ball_count_size = 52                ; Font size of the ball count text
 disp1_enabled = true                ; Enable or disable the first display field (true or false)
-disp1_x = 0.065                     ; X position of the first display field
-disp1_y = 0.75                      ; Y position of the first display field
-disp1_size = 20                     ; Font size of the first display field
+disp1_x = 13                        ; X position of the first display field
+disp1_y = 78.5                      ; Y position of the first display field
+disp1_size = 27                     ; Font size of the first display field
 disp1_label = varia:                ; Label before the first display field
-disp1_color = #ff4444             ; Color of the first display field
+disp1_color = #f6001D             ; Color of the first display field
 disp2_enabled = true                ; Enable or disable the second display field (true or false)
-disp2_x = 0.065                     ; X position of the second display field
-disp2_y = 0.88                      ; Y position of the second display field
-disp2_size = 20                     ; Font size of the second display field
+disp2_x = 11                        ; X position of the second display field
+disp2_y = 91.6                      ; Y position of the second display field
+disp2_size = 27                     ; Font size of the second display field
 disp2_label = hos:                  ; Label for the second display field
-disp2_color = #ff4444             ; Color of the second display field
+disp2_color = #f6001D             ; Color of the second display field
 
 ; Memory configuration for reading game data (you can find these values using Cheat Engine or similar tools)
 ; Example values are for the current steam version of "XenoTilt"
@@ -98,10 +101,8 @@ base_address = 0x0074A0B8           ; Base memory address for reading values
 offsets = 0x30,0xE88                ; Offsets for locating the score value
 ball_count_base = 0x01D21378        ; Base address for ball count
 ball_count_offsets = 0x0,0x58,0x0,0xC0,0x28,0x38,0x670  ; Offsets for ball count
-
 disp1_base = 0x01D047E8             ; Base address for first display field value
 disp1_offsets = 0xD0,0x8,0x68,0x30,0xB8,0x2A0,0x170  ; Offsets for the first display field
-
 disp2_base = 0x00754850             ; Base address for second display field value
 disp2_offsets = 0x198,0x410,0x850,0x120,0xB0  ; Offsets for the second display field
 ```

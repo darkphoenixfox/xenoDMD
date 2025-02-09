@@ -41,6 +41,8 @@ def load_config():
 
     # Display settings
     score_color = config["DISPLAYS"]["score_color"]
+    score_x = config["DISPLAYS"]["score_x"]
+    score_y = config["DISPLAYS"]["score_y"]
     score_size = int(config["DISPLAYS"]["score_size"])
     ball_count_enabled = config.getboolean("DISPLAYS", "ball_count_enabled", fallback=True)
     ball_count_label = config["DISPLAYS"]["ball_count_label"]
@@ -87,7 +89,8 @@ def load_config():
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
         ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
-        ball_count_enabled, disp1_enabled, disp2_enabled
+        ball_count_enabled, disp1_enabled, disp2_enabled,
+        score_x, score_y
     )
 
 
@@ -121,7 +124,8 @@ def create_dmd():
     ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
     disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
     ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
-    ball_count_enabled, disp1_enabled, disp2_enabled
+    ball_count_enabled, disp1_enabled, disp2_enabled,
+    score_x, score_y
     ) = load_config()
 
     
@@ -149,7 +153,7 @@ def create_dmd():
     if backglass_enabled:
         wallpaper_window = create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root)
     
-    custom_font = font.Font(family=font_name, size=int(dmd_height * score_size / 100))
+    custom_font = font.Font(family=font_name, size=int(score_size))
     ball_count_font = font.Font(family=font_name, size=int(ball_count_size))
     disp2_font = font.Font(family=font_name, size=int(disp2_size))
     disp1_font = font.Font(family=font_name, size=int(disp1_size))
@@ -162,19 +166,19 @@ def create_dmd():
 
     
     label_fg = tk.Label(canvas, text="", fg=score_color, bg='black', font=custom_font)
-    label_fg.place(relx=0.5, rely=0.5, anchor='center')
+    label_fg.place(relx=float(score_x) / 100, rely=float(score_y) / 100, anchor='center')
     
     label_ball_count = tk.Label(root, text="", fg=ball_count_color, bg='black', font=ball_count_font)
     if ball_count_enabled:
-        label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
+        label_ball_count.place(relx=float(ball_count_x) / 100, rely=float(ball_count_y) / 100, anchor='center')
     
     label_disp1 = tk.Label(root, text="", fg=disp1_color, bg='black', font=disp1_font)
     if disp1_enabled:
-        label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
+        label_disp1.place(relx=float(disp1_x) / 100, rely=float(disp1_y) / 100, anchor='center')
 
     label_disp2 = tk.Label(root, text="", fg=disp2_color, bg='black', font=disp2_font)
     if disp2_enabled:
-        label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
+        label_disp2.place(relx=float(disp2_x) / 100, rely=float(disp2_y) / 100, anchor='center')
     
     root.bind("<Escape>", lambda event: (root.destroy()))
     root.bind("<F5>", reload_config)
@@ -188,7 +192,8 @@ def create_dmd():
         label_disp1, label_disp2, root, disp1_label, disp2_label,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
         ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
-        ball_count_enabled, disp1_enabled, disp2_enabled
+        ball_count_enabled, disp1_enabled, disp2_enabled,
+        score_x, score_y
     ),
     daemon=True
     ).start()
@@ -203,7 +208,8 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
                label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y,
                disp1_size, disp2_x, disp2_y, disp2_size,
                ball_count_x, ball_count_y, ball_count_size, dmd_enabled,
-               ball_count_enabled, disp1_enabled, disp2_enabled):
+               ball_count_enabled, disp1_enabled, disp2_enabled,
+               score_x, score_y):   
     """Continuously updates the DMD display and exits if XENOTILT.exe is closed."""
     
     global previous_ball_count  
@@ -313,14 +319,18 @@ def reload_config(event=None):
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
         ball_count_x, ball_count_y, ball_count_size,
-        backglass_enabled, ball_count_enabled, disp1_enabled, disp2_enabled
+        backglass_enabled, ball_count_enabled, disp1_enabled, disp2_enabled,
+        score_x, score_y
     ) = load_config()
 
     # Update UI elements dynamically
-    label_fg.config(fg=score_color, font=font.Font(family=font_name, size=int(dmd_height * score_size / 100)))
+    label_fg.config(fg=score_color, font=font.Font(family=font_name, size=int(score_size)))
+    #divide score_x and score_y by 100 to get the relative position
+    label_fg.place(relx=float(score_x) / 100, rely=float(score_y) / 100, anchor='center')
+   
     
     if ball_count_enabled:
-        label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
+        label_ball_count.place(relx=float(ball_count_x) / 100, rely=float(ball_count_y) / 100, anchor='center')
         label_ball_count.config(fg=ball_count_color, text=f"{ball_count_label} 0",
                                 font=font.Font(family=font_name, size=int(ball_count_size)))
     elif ball_count_enabled == False:
@@ -329,7 +339,7 @@ def reload_config(event=None):
     if disp1_enabled:
         label_disp1.config(fg=disp1_color, text=f"{disp1_label} 00",
                        font=font.Font(family=font_name, size=int(disp1_size)))
-        label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
+        label_disp1.place(relx=float(disp1_x) / 100, rely=float(disp1_y) / 100, anchor='center')
     
     elif disp1_enabled == False:
         label_disp1.place_forget()
@@ -337,7 +347,7 @@ def reload_config(event=None):
     if disp2_enabled:
         label_disp2.config(fg=disp2_color, text=f"{disp2_label} 00",
                         font=font.Font(family=font_name, size=int(disp2_size)))
-        label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
+        label_disp2.place(relx=float(disp2_x) / 100, rely=float(disp2_y) / 100, anchor='center')
 
     elif disp2_enabled == False:
         label_disp2.place_forget()
