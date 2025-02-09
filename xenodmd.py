@@ -190,6 +190,9 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
         if score_value is not None and not displaying_message:
             formatted_score = format_score(score_value)
             label_fg.config(text=formatted_score)
+        
+        if score_value is None:
+            label_fg.config(text="XENODMD READY")
 
         if disp2_value is not None:
             label_disp2.config(text=f"{disp2_label} {disp2_value:02d}")
