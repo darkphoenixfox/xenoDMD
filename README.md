@@ -1,4 +1,4 @@
-# DMD Display for XENOTILT
+# DMD Display for XENOTILT (and other games!)
 
 ## Overview
 This script creates a Dynamic Message Display (DMD) and backglass display for [**XENOTILT**](https://store.steampowered.com/app/2008980/XENOTILT_HOSTILE_PINBALL_ACTION/) and [**DEMON'S TILT**](https://store.steampowered.com/app/422510/DEMONS_TILT/) by reading memory values from the game and displaying them using a graphical interface. The application extracts game data such as the score, ball count, and additional display values and presents them in a custom-styled UI.
