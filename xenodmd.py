@@ -22,6 +22,7 @@ def load_config():
     config.read("config.cfg")
 
     # DMD settings
+    enabled = config.getboolean("DMD", "enabled", fallback=True)
     dmd_width = int(config["DMD"]["dmd_width"])
     dmd_height = int(config["DMD"]["dmd_height"])
     dmd_x = int(config["DMD"]["dmd_x"])
@@ -108,7 +109,7 @@ def create_backglass_window(back_x, back_y, back_width, back_height, backglass_b
 
 def format_score(value):
     """Formats the score with dots every three digits, ensuring it is always 12 digits long."""
-    formatted_value = f"{value:012d}"
+    formatted_value = f"{value:013d}"
     return ".".join([formatted_value[max(i - 3, 0):i] for i in range(len(formatted_value), 0, -3)][::-1])
 
 
@@ -138,7 +139,7 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
                ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
                label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y,
                disp1_size, disp2_x, disp2_y, disp2_size,
-               ball_count_x, ball_count_y, ball_count_size):
+               ball_count_x, ball_count_y, ball_count_size, dmd_enabled):
     """Continuously updates the DMD display and exits if XENOTILT.exe is closed."""
     
     global previous_ball_count  
@@ -193,8 +194,10 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
         if disp2_value is not None:
             label_disp2.config(text=f"{disp2_label} {disp2_value:02d}")
 
+
         if disp1_value is not None:
             label_disp1.config(text=f"{disp1_label} {disp1_value:02d}")
+
 
         root.after(1, lambda: None)  
         time.sleep(0.5)
@@ -276,18 +279,18 @@ def create_dmd():
     disp2_font = font.Font(family=font_name, size=int(disp2_size))
     disp1_font = font.Font(family=font_name, size=int(disp1_size))
 
-    global label_fg, label_ball_count, label_disp1, label_disp2
+    global label_fg, label_ball_count, label_disp1, label_disp2, scrolling_active
     
-    label_fg = tk.Label(canvas, text="0.000.000.000.000", fg=score_color, bg='black', font=custom_font)
+    label_fg = tk.Label(canvas, text="", fg=score_color, bg='black', font=custom_font)
     label_fg.place(relx=0.5, rely=0.5, anchor='center')
     
-    label_ball_count = tk.Label(root, text=f" {ball_count_label} 0", fg=ball_count_color, bg='black', font=ball_count_font)
+    label_ball_count = tk.Label(root, text="", fg=ball_count_color, bg='black', font=ball_count_font)
     label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
     
-    label_disp2 = tk.Label(root, text=f" {disp2_label} 00", fg=disp2_color, bg='black', font=disp2_font)
+    label_disp2 = tk.Label(root, text="", fg=disp2_color, bg='black', font=disp2_font)
     label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
 
-    label_disp1 = tk.Label(root, text=f" {disp1_label} 00", fg=disp1_color, bg='black', font=disp1_font)
+    label_disp1 = tk.Label(root, text="", fg=disp1_color, bg='black', font=disp1_font)
     label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
     
     root.bind("<Escape>", lambda event: (root.destroy()))
@@ -301,7 +304,7 @@ def create_dmd():
         ball_count_base, ball_count_offsets, label_fg, label_ball_count,
         label_disp1, label_disp2, root, disp1_label, disp2_label,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-        ball_count_x, ball_count_y, ball_count_size
+        ball_count_x, ball_count_y, ball_count_size, backglass_enabled
     ),
     daemon=True
     ).start()
