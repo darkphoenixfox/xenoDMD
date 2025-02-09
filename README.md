@@ -3,11 +3,11 @@
 ## Overview
 This script creates a Dynamic Message Display (DMD) and backglass display for **XENOTILT** by reading memory values from the game and displaying them using a graphical interface. The application extracts game data such as the score, ball count, and additional display values and presents them in a custom-styled UI.
 
-![Screenshot](screen1.png)
+![Screenshot](screenshots/screen1.png)
 
-![Screenshot](screen2.png)
+![Screenshot](screenshots/screen2.png)
 
-![Screenshot](demonscreenshot.png)
+![Screenshot](screenshots/demonscreenshot.png)
 
 (The fonts used in the screenshot are [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype, [Digital-7](https://www.dafont.com/digital-7.font) by Style-7 and [Satanic Demon](https://www.dafont.com/satanic-demon.font) by Chris Hansen.)
 
