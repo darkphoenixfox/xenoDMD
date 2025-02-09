@@ -22,14 +22,14 @@ def load_config():
     config.read("config.cfg")
 
     # DMD settings
-    enabled = config.getboolean("DMD", "enabled", fallback=True)
+    dmd_enabled = config.getboolean("DMD", "enabled", fallback=True)
     dmd_width = int(config["DMD"]["dmd_width"])
     dmd_height = int(config["DMD"]["dmd_height"])
     dmd_x = int(config["DMD"]["dmd_x"])
     dmd_y = int(config["DMD"]["dmd_y"])
     dmd_bg = config["DMD"]["dmd_bg"]
     bg_alpha = int(config["DMD"]["bg_alpha"])
-    font_name = config["DMD"]["font_name"]
+
 
     # Backglass settings
     backglass_enabled = config.getboolean("BACKGLASS", "enabled", fallback=True)
@@ -44,6 +44,7 @@ def load_config():
     score_x = config["DISPLAYS"]["score_x"]
     score_y = config["DISPLAYS"]["score_y"]
     score_size = int(config["DISPLAYS"]["score_size"])
+    score_font = config["DISPLAYS"]["score_font"]
     ball_count_enabled = config.getboolean("DISPLAYS", "ball_count_enabled", fallback=True)
     ball_count_label = config["DISPLAYS"]["ball_count_label"]
     ball_count_color = config["DISPLAYS"]["ball_count_color"]
@@ -82,13 +83,13 @@ def load_config():
     disp2_offsets = [int(offset, 16) for offset in config["MEMORY"]["disp2_offsets"].split(",")]
 
     return (
-        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
+        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, score_font,
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
         process_name, module_name, module2_name, base_address, offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-        ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
+        ball_count_x, ball_count_y, ball_count_size, dmd_enabled, backglass_enabled,
         ball_count_enabled, disp1_enabled, disp2_enabled,
         score_x, score_y
     )
@@ -117,16 +118,17 @@ def create_backglass_window(back_x, back_y, back_width, back_height, backglass_b
 def create_dmd():
     """Initializes and creates the GUI window for displaying the DMD and backglass, loading necessary settings."""
     (
-    dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
-    back_x, back_y, back_width, back_height, backglass_bg,
-    score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
-    process_name, module_name, module2_name, base_address, offsets,
-    ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
-    disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-    ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
-    ball_count_enabled, disp1_enabled, disp2_enabled,
-    score_x, score_y
+        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, score_font,
+        back_x, back_y, back_width, back_height, backglass_bg,
+        score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
+        process_name, module_name, module2_name, base_address, offsets,
+        ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
+        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
+        ball_count_x, ball_count_y, ball_count_size, dmd_enabled, backglass_enabled,
+        ball_count_enabled, disp1_enabled, disp2_enabled,
+        score_x, score_y
     ) = load_config()
+
 
     
     root = tk.Tk()
@@ -153,10 +155,10 @@ def create_dmd():
     if backglass_enabled:
         wallpaper_window = create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root)
     
-    custom_font = font.Font(family=font_name, size=int(score_size))
-    ball_count_font = font.Font(family=font_name, size=int(ball_count_size))
-    disp2_font = font.Font(family=font_name, size=int(disp2_size))
-    disp1_font = font.Font(family=font_name, size=int(disp1_size))
+    custom_font = font.Font(family=score_font, size=int(score_size))
+    ball_count_font = font.Font(family=score_font, size=int(ball_count_size))
+    disp2_font = font.Font(family=score_font, size=int(disp2_size))
+    disp1_font = font.Font(family=score_font, size=int(disp1_size))
 
     global label_fg, label_disp1, label_disp2, label_ball_count
     label_fg = None
@@ -186,14 +188,15 @@ def create_dmd():
     threading.Thread(
     target=update_dmd,
     args=(
-        process_name, base_address, offsets, module_name, module2_name,
-        disp1_base, disp1_offsets, disp2_base, disp2_offsets,
-        ball_count_base, ball_count_offsets, label_fg, label_ball_count,
-        label_disp1, label_disp2, root, disp1_label, disp2_label,
-        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-        ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
-        ball_count_enabled, disp1_enabled, disp2_enabled,
-        score_x, score_y
+        process_name, base_address, offsets, module_name, module2_name, 
+            disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
+            ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
+            label_disp1, label_disp2, root, ball_count_label, 
+            disp1_label, disp2_label, disp1_x, disp1_y,
+            disp1_size, disp2_x, disp2_y, disp2_size,
+            ball_count_x, ball_count_y, ball_count_size, dmd_enabled,
+            ball_count_enabled, disp1_enabled, disp2_enabled,
+            score_x, score_y
     ),
     daemon=True
     ).start()
@@ -205,7 +208,8 @@ def create_dmd():
 def update_dmd(process_name, base_address, offsets, module_name, module2_name, 
                disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
                ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
-               label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y,
+               label_disp1, label_disp2, root, ball_count_label, 
+               disp1_label, disp2_label, disp1_x, disp1_y,
                disp1_size, disp2_x, disp2_y, disp2_size,
                ball_count_x, ball_count_y, ball_count_size, dmd_enabled,
                ball_count_enabled, disp1_enabled, disp2_enabled,
@@ -252,7 +256,7 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
 
         if ball_count_enabled:
             if ball_count_value is not None:
-                label_ball_count.config(text=f"ball count: {ball_count_value}")
+                label_ball_count.config(text=f"{ball_count_label} {ball_count_value:02d}")
 
                 if previous_ball_count is not None and ball_count_value > previous_ball_count:
                     message = f"BALL {ball_count_value} READY!"
@@ -312,19 +316,19 @@ def reload_config(event=None):
 
     # Reload the configuration
     (
-        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
+        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, score_font,
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
         process_name, module_name, module2_name, base_address, offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
         ball_count_x, ball_count_y, ball_count_size,
-        backglass_enabled, ball_count_enabled, disp1_enabled, disp2_enabled,
+        dmd_enabled, backglass_enabled, ball_count_enabled, disp1_enabled, disp2_enabled,
         score_x, score_y
     ) = load_config()
 
     # Update UI elements dynamically
-    label_fg.config(fg=score_color, font=font.Font(family=font_name, size=int(score_size)))
+    label_fg.config(fg=score_color, font=font.Font(family=score_font, size=int(score_size)))
     #divide score_x and score_y by 100 to get the relative position
     label_fg.place(relx=float(score_x) / 100, rely=float(score_y) / 100, anchor='center')
    
@@ -332,13 +336,13 @@ def reload_config(event=None):
     if ball_count_enabled:
         label_ball_count.place(relx=float(ball_count_x) / 100, rely=float(ball_count_y) / 100, anchor='center')
         label_ball_count.config(fg=ball_count_color, text=f"{ball_count_label} 0",
-                                font=font.Font(family=font_name, size=int(ball_count_size)))
+                                font=font.Font(family=score_font, size=int(ball_count_size)))
     elif ball_count_enabled == False:
         label_ball_count.place_forget()
     
     if disp1_enabled:
         label_disp1.config(fg=disp1_color, text=f"{disp1_label} 00",
-                       font=font.Font(family=font_name, size=int(disp1_size)))
+                       font=font.Font(family=score_font, size=int(disp1_size)))
         label_disp1.place(relx=float(disp1_x) / 100, rely=float(disp1_y) / 100, anchor='center')
     
     elif disp1_enabled == False:
@@ -346,7 +350,7 @@ def reload_config(event=None):
 
     if disp2_enabled:
         label_disp2.config(fg=disp2_color, text=f"{disp2_label} 00",
-                        font=font.Font(family=font_name, size=int(disp2_size)))
+                        font=font.Font(family=score_font, size=int(disp2_size)))
         label_disp2.place(relx=float(disp2_x) / 100, rely=float(disp2_y) / 100, anchor='center')
 
     elif disp2_enabled == False:

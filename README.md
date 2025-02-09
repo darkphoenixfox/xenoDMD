@@ -7,7 +7,9 @@ This script creates a Dynamic Message Display (DMD) and backglass display for **
 
 ![Screenshot](screen2.png)
 
-(The fonts used in the screenshot are [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype and [Digital-7](https://www.dafont.com/digital-7.font) by Style-7.)
+![Screenshot](demonscreenshot.png)
+
+(The fonts used in the screenshot are [The Led Display ST](https://www.dafont.com/the-led-display-st.font) by Southype, [Digital-7](https://www.dafont.com/digital-7.font) by Style-7 and [Satanic Demon](https://www.dafont.com/satanic-demon.font) by Chris Hansen.)
 
 See it in action on [YouTube](https://www.youtube.com/watch?v=AlW3EWoYUPo).
 
@@ -48,6 +50,7 @@ Example config.cfg (remove the comments before using it, or use the example file
 ```ini
 ; DMD (Dot Matrix Display) settings
 [DMD]
+dmd_enabled = true                  ; Enable or disable the DMD display (true or false)
 dmd_width = 1280                    ; Width of the DMD window
 dmd_height = 720                    ; Height of the DMD window
 dmd_x = 1290                        ; X position of the DMD window on the screen
