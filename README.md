@@ -58,6 +58,7 @@ font_name = Digital Counter 7       ; Font used for text in the DMD (Must be ins
 
 ; Backglass settings
 [BACKGLASS]
+enabled = true                      ; Enable or disable the backglass display (true or false)
 back_x = 10                         ; X position of the backglass window
 back_y = 0                          ; Y position of the backglass window
 back_width = 1280                   ; Width of the backglass window

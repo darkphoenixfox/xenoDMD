@@ -31,6 +31,7 @@ def load_config():
     font_name = config["DMD"]["font_name"]
 
     # Backglass settings
+    backglass_enabled = config.getboolean("BACKGLASS", "enabled", fallback=True)
     back_x = int(config["BACKGLASS"]["back_x"])
     back_y = int(config["BACKGLASS"]["back_y"])
     back_width = int(config["BACKGLASS"]["back_width"])
@@ -81,7 +82,7 @@ def load_config():
         process_name, module_name, module2_name, base_address, offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-        ball_count_x, ball_count_y, ball_count_size
+        ball_count_x, ball_count_y, ball_count_size, backglass_enabled
     )
 
 
@@ -242,7 +243,7 @@ def create_dmd():
     process_name, module_name, module2_name, base_address, offsets,
     ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
     disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-    ball_count_x, ball_count_y, ball_count_size
+    ball_count_x, ball_count_y, ball_count_size, backglass_enabled
     ) = load_config()
 
     
@@ -267,7 +268,8 @@ def create_dmd():
         canvas.create_image(0, 0, anchor="nw", image=bg_image)
         canvas.image = bg_image
 
-    wallpaper_window = create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root)
+    if backglass_enabled:
+        wallpaper_window = create_backglass_window(back_x, back_y, back_width, back_height, backglass_bg, root)
     
     custom_font = font.Font(family=font_name, size=int(dmd_height * score_size / 100))
     ball_count_font = font.Font(family=font_name, size=int(ball_count_size))
