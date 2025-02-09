@@ -42,16 +42,19 @@ def load_config():
     # Display settings
     score_color = config["DISPLAYS"]["score_color"]
     score_size = int(config["DISPLAYS"]["score_size"])
+    ball_count_enabled = config.getboolean("DISPLAYS", "ball_count_enabled", fallback=True)
     ball_count_label = config["DISPLAYS"]["ball_count_label"]
     ball_count_color = config["DISPLAYS"]["ball_count_color"]
     ball_count_x = config["DISPLAYS"]["ball_count_x"]
     ball_count_y = config["DISPLAYS"]["ball_count_y"]
     ball_count_size = config["DISPLAYS"]["ball_count_size"]
+    disp1_enabled = config.getboolean("DISPLAYS", "disp1_enabled", fallback=True)
     disp1_label = config["DISPLAYS"]["disp1_label"]
     disp1_color = config["DISPLAYS"]["disp1_color"]
     disp1_x = config["DISPLAYS"]["disp1_x"]
     disp1_y = config["DISPLAYS"]["disp1_y"]
     disp1_size = config["DISPLAYS"]["disp1_size"]
+    disp2_enabled = config.getboolean("DISPLAYS", "disp2_enabled", fallback=True)
     disp2_label = config["DISPLAYS"]["disp2_label"]
     disp2_color = config["DISPLAYS"]["disp2_color"]
     disp2_size = config["DISPLAYS"]["disp2_size"]
@@ -83,7 +86,8 @@ def load_config():
         process_name, module_name, module2_name, base_address, offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-        ball_count_x, ball_count_y, ball_count_size, backglass_enabled
+        ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
+        ball_count_enabled, disp1_enabled, disp2_enabled
     )
 
 
@@ -107,139 +111,6 @@ def create_backglass_window(back_x, back_y, back_width, back_height, backglass_b
     return wall_root
 
 
-def format_score(value):
-    """Formats the score with dots every three digits, ensuring it is always 12 digits long."""
-    formatted_value = f"{value:013d}"
-    return ".".join([formatted_value[max(i - 3, 0):i] for i in range(len(formatted_value), 0, -3)][::-1])
-
-
-def read_memory_value(process_name, base_address, module_name, offsets):
-    """Reads a memory value from a specific process, following the given base address and offsets."""
-    try:
-        pm = pymem.Pymem(process_name)
-        module_base = pymem.process.module_from_name(pm.process_handle, module_name).lpBaseOfDll
-        address = module_base + base_address
-        for offset in offsets:
-            address = pm.read_ulonglong(address)
-            address += offset
-        value = pm.read_ulonglong(address)
-        return value
-    except:
-        return None
-    
-def is_process_running(process_name):
-    """Check if a process is running by name."""
-    for process in psutil.process_iter(attrs=['name']):
-        if process.info['name'].lower() == process_name.lower():
-            return True
-    return False
-
-def update_dmd(process_name, base_address, offsets, module_name, module2_name, 
-               disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
-               ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
-               label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y,
-               disp1_size, disp2_x, disp2_y, disp2_size,
-               ball_count_x, ball_count_y, ball_count_size, dmd_enabled):
-    """Continuously updates the DMD display and exits if XENOTILT.exe is closed."""
-    
-    global previous_ball_count  
-    previous_ball_count = None  
-    displaying_message = False  
-    detected_once = False  # Track if the process was found at least once
-
-    def restore_score():
-        """Restores the score display after message delay."""
-        nonlocal displaying_message
-        displaying_message = False  
-        score_value = read_memory_value(process_name, base_address, module_name, offsets)
-        if score_value is not None:
-            formatted_score = format_score(score_value)
-            label_fg.config(text=formatted_score)
-
-    while True:
-        # Check if the process is running
-        if is_process_running(process_name):
-            detected_once = True  # Mark that the process has been seen at least once
-        elif detected_once:
-            print(f"Process {process_name} has closed. Exiting...")
-            root.destroy()  # Close the Tkinter window
-            sys.exit(0)  # Terminate the script
-
-        # Read memory values
-        score_value = read_memory_value(process_name, base_address, module_name, offsets)
-        ball_count_value = read_memory_value(process_name, ball_count_base, module2_name, ball_count_offsets)
-        disp2_value = read_memory_value(process_name, disp2_base, module_name, disp2_offsets)
-        disp1_value = read_memory_value(process_name, disp1_base, module2_name, disp1_offsets)
-
-        if ball_count_value is not None:
-            label_ball_count.config(text=f"ball count: {ball_count_value}")
-
-            if previous_ball_count is not None and ball_count_value > previous_ball_count:
-                message = f"BALL {ball_count_value} READY!"
-                label_fg.config(text=message)
-                displaying_message = True
-                root.after(2000, restore_score)
-
-            elif previous_ball_count is not None and previous_ball_count > 0 and ball_count_value == 0:
-                label_fg.config(text="WELCOME BACK")
-                displaying_message = True
-                root.after(4000, restore_score)
-
-            previous_ball_count = ball_count_value  
-
-        if score_value is not None and not displaying_message:
-            formatted_score = format_score(score_value)
-            label_fg.config(text=formatted_score)
-        
-        if score_value is None:
-            label_fg.config(text="XENODMD READY")
-
-        if disp2_value is not None:
-            label_disp2.config(text=f"{disp2_label} {disp2_value:02d}")
-
-
-        if disp1_value is not None:
-            label_disp1.config(text=f"{disp1_label} {disp1_value:02d}")
-
-
-        root.after(1, lambda: None)  
-        time.sleep(0.5)
-
-def reload_config(event=None):
-    """Reloads configuration values when the F5 key is pressed."""
-    global config_values, label_fg, label_ball_count, label_disp1, label_disp2
-    print("[INFO] Reloading config...")
-
-    # Reload the configuration
-    (
-        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
-        back_x, back_y, back_width, back_height, backglass_bg,
-        score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
-        process_name, module_name, module2_name, base_address, offsets,
-        ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
-        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-        ball_count_x, ball_count_y, ball_count_size
-    ) = load_config()
-
-    # Update UI elements dynamically
-    label_fg.config(fg=score_color, font=font.Font(family=font_name, size=int(dmd_height * score_size / 100)))
-    label_ball_count.config(fg=ball_count_color, text=f"{ball_count_label} 0",
-                            font=font.Font(family=font_name, size=int(ball_count_size)))
-    label_disp1.config(fg=disp1_color, text=f"{disp1_label} 00",
-                       font=font.Font(family=font_name, size=int(disp1_size)))
-    label_disp2.config(fg=disp2_color, text=f"{disp2_label} 00",
-                       font=font.Font(family=font_name, size=int(disp2_size)))
-    
-    # Reload positions
-    label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
-    label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
-    label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
-
-    print("[INFO] Config reloaded successfully.")
-
-
-
-    
 def create_dmd():
     """Initializes and creates the GUI window for displaying the DMD and backglass, loading necessary settings."""
     (
@@ -249,7 +120,8 @@ def create_dmd():
     process_name, module_name, module2_name, base_address, offsets,
     ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
     disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-    ball_count_x, ball_count_y, ball_count_size, backglass_enabled
+    ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
+    ball_count_enabled, disp1_enabled, disp2_enabled
     ) = load_config()
 
     
@@ -282,19 +154,27 @@ def create_dmd():
     disp2_font = font.Font(family=font_name, size=int(disp2_size))
     disp1_font = font.Font(family=font_name, size=int(disp1_size))
 
-    global label_fg, label_ball_count, label_disp1, label_disp2, scrolling_active
+    global label_fg, label_disp1, label_disp2, label_ball_count
+    label_fg = None
+    label_ball_count = None
+    label_disp1 = None
+    label_disp2 = None
+
     
     label_fg = tk.Label(canvas, text="", fg=score_color, bg='black', font=custom_font)
     label_fg.place(relx=0.5, rely=0.5, anchor='center')
     
     label_ball_count = tk.Label(root, text="", fg=ball_count_color, bg='black', font=ball_count_font)
-    label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
+    if ball_count_enabled:
+        label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
     
-    label_disp2 = tk.Label(root, text="", fg=disp2_color, bg='black', font=disp2_font)
-    label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
-
     label_disp1 = tk.Label(root, text="", fg=disp1_color, bg='black', font=disp1_font)
-    label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
+    if disp1_enabled:
+        label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
+
+    label_disp2 = tk.Label(root, text="", fg=disp2_color, bg='black', font=disp2_font)
+    if disp2_enabled:
+        label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
     
     root.bind("<Escape>", lambda event: (root.destroy()))
     root.bind("<F5>", reload_config)
@@ -307,7 +187,8 @@ def create_dmd():
         ball_count_base, ball_count_offsets, label_fg, label_ball_count,
         label_disp1, label_disp2, root, disp1_label, disp2_label,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
-        ball_count_x, ball_count_y, ball_count_size, backglass_enabled
+        ball_count_x, ball_count_y, ball_count_size, backglass_enabled,
+        ball_count_enabled, disp1_enabled, disp2_enabled
     ),
     daemon=True
     ).start()
@@ -315,6 +196,154 @@ def create_dmd():
 
 
     root.mainloop()
+
+def update_dmd(process_name, base_address, offsets, module_name, module2_name, 
+               disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
+               ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
+               label_disp1, label_disp2, root, disp1_label, disp2_label, disp1_x, disp1_y,
+               disp1_size, disp2_x, disp2_y, disp2_size,
+               ball_count_x, ball_count_y, ball_count_size, dmd_enabled,
+               ball_count_enabled, disp1_enabled, disp2_enabled):
+    """Continuously updates the DMD display and exits if XENOTILT.exe is closed."""
+    
+    global previous_ball_count  
+    previous_ball_count = None  
+    displaying_message = False  
+    detected_once = False  # Track if the process was found at least once
+
+    def restore_score():
+        """Restores the score display after message delay."""
+        nonlocal displaying_message
+        displaying_message = False  
+        score_value = read_memory_value(process_name, base_address, module_name, offsets)
+        if score_value is not None:
+            formatted_score = format_score(score_value)
+            label_fg.config(text=formatted_score)
+
+    while True:
+        # Check if the process is running
+        if is_process_running(process_name):
+            detected_once = True  # Mark that the process has been seen at least once
+        elif detected_once:
+            print(f"Process {process_name} has closed. Exiting...")
+            root.destroy()  # Close the Tkinter window
+            sys.exit(0)  # Terminate the script
+
+        # Read memory values
+        score_value = read_memory_value(process_name, base_address, module_name, offsets)
+        ball_count_value = read_memory_value(process_name, ball_count_base, module2_name, ball_count_offsets)
+        disp1_value = read_memory_value(process_name, disp1_base, module2_name, disp1_offsets)
+        disp2_value = read_memory_value(process_name, disp2_base, module_name, disp2_offsets)
+        
+
+ 
+        if score_value is None:
+            label_fg.config(text="XENODMD READY")
+
+        elif score_value is not None and not displaying_message:
+            formatted_score = format_score(score_value)
+            label_fg.config(text=formatted_score)
+
+        if ball_count_enabled:
+            if ball_count_value is not None:
+                label_ball_count.config(text=f"ball count: {ball_count_value}")
+
+                if previous_ball_count is not None and ball_count_value > previous_ball_count:
+                    message = f"BALL {ball_count_value} READY!"
+                    label_fg.config(text=message)
+                    displaying_message = True
+                    root.after(2000, restore_score)
+
+                elif previous_ball_count is not None and previous_ball_count > 0 and ball_count_value == 0:
+                    label_fg.config(text="WELCOME BACK")
+                    displaying_message = True
+                    root.after(4000, restore_score)
+
+                previous_ball_count = ball_count_value  
+
+        if disp1_enabled and disp1_value is not None:
+            label_disp1.config(text=f"{disp1_label} {disp1_value:02d}") 
+
+        if disp2_enabled and disp2_value is not None:
+            label_disp2.config(text=f"{disp2_label} {disp2_value:02d}")
+
+        root.after(1, lambda: None)  
+        time.sleep(0.5)
+
+
+def format_score(value):
+    """Formats the score with dots every three digits, ensuring it is always 12 digits long."""
+    formatted_value = f"{value:013d}"
+    return ".".join([formatted_value[max(i - 3, 0):i] for i in range(len(formatted_value), 0, -3)][::-1])
+
+
+def read_memory_value(process_name, base_address, module_name, offsets):
+    """Reads a memory value from a specific process, following the given base address and offsets."""
+    try:
+        pm = pymem.Pymem(process_name)
+        module_base = pymem.process.module_from_name(pm.process_handle, module_name).lpBaseOfDll
+        address = module_base + base_address
+        for offset in offsets:
+            address = pm.read_ulonglong(address)
+            address += offset
+        value = pm.read_ulonglong(address)
+        return value
+    except:
+        return None
+    
+def is_process_running(process_name):
+    """Check if a process is running by name."""
+    for process in psutil.process_iter(attrs=['name']):
+        if process.info['name'].lower() == process_name.lower():
+            return True
+    return False
+
+
+def reload_config(event=None):
+    """Reloads configuration values when the F5 key is pressed."""
+    global config_values, label_fg, label_ball_count, label_disp1, label_disp2
+    print("[INFO] Reloading config...")
+
+    # Reload the configuration
+    (
+        dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, font_name,
+        back_x, back_y, back_width, back_height, backglass_bg,
+        score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
+        process_name, module_name, module2_name, base_address, offsets,
+        ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
+        disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
+        ball_count_x, ball_count_y, ball_count_size,
+        backglass_enabled, ball_count_enabled, disp1_enabled, disp2_enabled
+    ) = load_config()
+
+    # Update UI elements dynamically
+    label_fg.config(fg=score_color, font=font.Font(family=font_name, size=int(dmd_height * score_size / 100)))
+    
+    if ball_count_enabled:
+        label_ball_count.place(relx=ball_count_x, rely=ball_count_y, anchor='nw')
+        label_ball_count.config(fg=ball_count_color, text=f"{ball_count_label} 0",
+                                font=font.Font(family=font_name, size=int(ball_count_size)))
+    elif ball_count_enabled == False:
+        label_ball_count.place_forget()
+    
+    if disp1_enabled:
+        label_disp1.config(fg=disp1_color, text=f"{disp1_label} 00",
+                       font=font.Font(family=font_name, size=int(disp1_size)))
+        label_disp1.place(relx=disp1_x, rely=disp1_y, anchor='nw')
+    
+    elif disp1_enabled == False:
+        label_disp1.place_forget()
+
+    if disp2_enabled:
+        label_disp2.config(fg=disp2_color, text=f"{disp2_label} 00",
+                        font=font.Font(family=font_name, size=int(disp2_size)))
+        label_disp2.place(relx=disp2_x, rely=disp2_y, anchor='nw')
+
+    elif disp2_enabled == False:
+        label_disp2.place_forget()
+    
+
+    print("[INFO] Config reloaded successfully.")
 
 if __name__ == "__main__":
     
