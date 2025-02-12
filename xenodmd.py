@@ -70,8 +70,8 @@ def load_config():
     process_name = config["MEMORY"]["process_name"]
     module_name = config["MEMORY"]["module_name"]
     module2_name = config["MEMORY"]["module2_name"]
-    base_address = int(config["MEMORY"]["base_address"], 16)
-    offsets = [int(offset, 16) for offset in config["MEMORY"]["offsets"].split(",")]
+    score_address = int(config["MEMORY"]["score_address"], 16)
+    score_offsets = [int(offset, 16) for offset in config["MEMORY"]["score_offsets"].split(",")]
 
     ball_count_base = int(config["MEMORY"]["ball_count_base"], 16)
     ball_count_offsets = [int(offset, 16) for offset in config["MEMORY"]["ball_count_offsets"].split(",")]
@@ -86,7 +86,7 @@ def load_config():
         dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, score_font,
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
-        process_name, module_name, module2_name, base_address, offsets,
+        process_name, module_name, module2_name, score_address, score_offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
         ball_count_x, ball_count_y, ball_count_size, dmd_enabled, backglass_enabled,
@@ -121,7 +121,7 @@ def create_dmd():
         dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, score_font,
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
-        process_name, module_name, module2_name, base_address, offsets,
+        process_name, module_name, module2_name, score_address, score_offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
         ball_count_x, ball_count_y, ball_count_size, dmd_enabled, backglass_enabled,
@@ -188,7 +188,7 @@ def create_dmd():
     threading.Thread(
     target=update_dmd,
     args=(
-        process_name, base_address, offsets, module_name, module2_name, 
+        process_name, score_address, score_offsets, module_name, module2_name, 
             disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
             ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
             label_disp1, label_disp2, root, ball_count_label, 
@@ -205,7 +205,7 @@ def create_dmd():
 
     root.mainloop()
 
-def update_dmd(process_name, base_address, offsets, module_name, module2_name, 
+def update_dmd(process_name, score_address, score_offsets, module_name, module2_name, 
                disp1_base, disp1_offsets, disp2_base, disp2_offsets, 
                ball_count_base, ball_count_offsets, label_fg, label_ball_count, 
                label_disp1, label_disp2, root, ball_count_label, 
@@ -225,7 +225,7 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
         """Restores the score display after message delay."""
         nonlocal displaying_message
         displaying_message = False  
-        score_value = read_memory_value(process_name, base_address, module_name, offsets)
+        score_value = read_memory_value(process_name, score_address, module_name, score_offsets)
         if score_value is not None:
             formatted_score = format_score(score_value)
             label_fg.config(text=formatted_score)
@@ -240,7 +240,7 @@ def update_dmd(process_name, base_address, offsets, module_name, module2_name,
             sys.exit(0)  # Terminate the script
 
         # Read memory values
-        score_value = read_memory_value(process_name, base_address, module_name, offsets)
+        score_value = read_memory_value(process_name, score_address, module_name, score_offsets)
         ball_count_value = read_memory_value(process_name, ball_count_base, module2_name, ball_count_offsets)
         disp1_value = read_memory_value(process_name, disp1_base, module2_name, disp1_offsets)
         disp2_value = read_memory_value(process_name, disp2_base, module_name, disp2_offsets)
@@ -287,13 +287,13 @@ def format_score(value):
     return ".".join([formatted_value[max(i - 3, 0):i] for i in range(len(formatted_value), 0, -3)][::-1])
 
 
-def read_memory_value(process_name, base_address, module_name, offsets):
+def read_memory_value(process_name, score_address, module_name, score_offsets):
     """Reads a memory value from a specific process, following the given base address and offsets."""
     try:
         pm = pymem.Pymem(process_name)
         module_base = pymem.process.module_from_name(pm.process_handle, module_name).lpBaseOfDll
-        address = module_base + base_address
-        for offset in offsets:
+        address = module_base + score_address
+        for offset in score_offsets:
             address = pm.read_ulonglong(address)
             address += offset
         value = pm.read_ulonglong(address)
@@ -319,7 +319,7 @@ def reload_config(event=None):
         dmd_width, dmd_height, dmd_x, dmd_y, score_size, dmd_bg, bg_alpha, score_font,
         back_x, back_y, back_width, back_height, backglass_bg,
         score_color, ball_count_label, ball_count_color, disp1_label, disp1_color, disp2_label, disp2_color,
-        process_name, module_name, module2_name, base_address, offsets,
+        process_name, module_name, module2_name, score_address, score_offsets,
         ball_count_base, ball_count_offsets, disp1_base, disp1_offsets, disp2_base, disp2_offsets,
         disp1_x, disp1_y, disp1_size, disp2_x, disp2_y, disp2_size,
         ball_count_x, ball_count_y, ball_count_size,
